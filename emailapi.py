@@ -23,20 +23,3 @@ async def send_email(receiver: str, message: str, subject: str):
     with smtplib.SMTP_SSL('smtp.sendgrid.net', 465, context=context) as smtp:
         smtp.login(sender, password)
         smtp.sendmail(sender, receiver, em.as_string())
-
-
-@app.get("/send-message")
-async def send_message(number: str, message: str, subject: Optional[str] = None):
-    number = number + "@vtext.com"
-    if subject == None:
-        subject = " "
-    em = EmailMessage()
-    em['From'] = sender
-    em['To'] = number
-    em['Subject'] = subject
-    em.set_content(message)
-
-    with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
-        smtp.login(sender, password)
-        smtp.sendmail(sender, number, em.as_string())
-
