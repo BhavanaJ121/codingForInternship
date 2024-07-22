@@ -1,16 +1,19 @@
 import os
 from dotenv import load_dotenv
 import serpapi
-from fastapi import FastAPI
+from fastapi import APIRouter
 
 load_dotenv()
 api_key = os.getenv('SERPAPI_KEY')
-app = FastAPI()
+router = APIRouter(
+    prefix="/serp",
+    tags=['serp']
+)
 
 client = serpapi.Client(api_key=api_key)
 
 
-@app.get("/")
+@router.get("/")
 async def search(query: str):
     result = client.search(
         q=query,
@@ -29,7 +32,7 @@ async def search(query: str):
     return {"result": formatted_result}
 
 
-@app.get("/image")
+@router.get("/image")
 async def search_image(query: str):
     result = client.search(
         q=query,

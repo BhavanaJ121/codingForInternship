@@ -1,10 +1,13 @@
 # importing required classes
 from pypdf import PdfReader
-from fastapi import FastAPI, UploadFile
+from fastapi import FastAPI, UploadFile, APIRouter
 from db import SessionLocal
 
 # creating a pdf reader object
-app = FastAPI()
+router = APIRouter(
+    prefix="/pdf",
+    tags=['pdf']
+)
 '''
 reader = PdfReader('example.pdf') 
 
@@ -27,7 +30,7 @@ def get_db():
         db.close()
 
 
-@app.post("/uploadfile/")
+@router.post("/uploadfile/")
 async def create_upload_file(file: UploadFile):
     try:
         file_path = f"C:\\Users\\hp\\OneDrive\\Documents\\gfg/{file.filename}"
@@ -46,7 +49,7 @@ async def create_upload_file(file: UploadFile):
     return {"content": text}
 
 
-@app.post('/upload-file')
+@router.post('/upload-file')
 async def read_pdf(file: UploadFile):
     file_content = await file.read(file.size)
     file_content = str(file_content)

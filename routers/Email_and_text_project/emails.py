@@ -1,18 +1,21 @@
 from typing import Optional
 
-from fastapi import FastAPI
+from fastapi import FastAPI, APIRouter
 from email.message import EmailMessage
 import ssl
 import smtplib
 
-app = FastAPI()
+router = APIRouter(
+    prefix="/emails",
+    tags=['emails']
+)
 sender = 'bhavanajayanth313@gmail.com'
 password = 'tmgf hpfb hyml zgoh'
 password_sendgrid = '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'
 context = ssl.create_default_context()
 
 
-@app.get("/")
+@router.get("/")
 async def send_email(receiver: str, message: str, subject: str):
     em = EmailMessage()
     em['From'] = sender
