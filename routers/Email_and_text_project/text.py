@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fastapi import APIRouter
 from routers.Email_and_text_project.emails import EmailMessage
 import ssl
@@ -26,4 +28,3 @@ async def send_message(number: str, message: str, subject: Optional[str] = None)
     with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
         smtp.login(sender, password)
         smtp.sendmail(sender, number, em.as_string())
-

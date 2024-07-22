@@ -1,7 +1,7 @@
 # importing required classes
 from pypdf import PdfReader
 from fastapi import FastAPI, UploadFile, APIRouter
-from db import SessionLocal
+from routers.pdf_project.db import SessionLocal
 
 # creating a pdf reader object
 router = APIRouter(
