@@ -1,25 +1,16 @@
 # importing required classes
-from pypdf import PdfReader
-from fastapi import FastAPI, UploadFile, APIRouter
-from routers.pdf_project.db import SessionLocal
+from fastapi import UploadFile, APIRouter, File, Depends
+from sqlalchemy.orm import Session
+
+from database import SessionLocal
+import PyPDF2
+import model
 
 # creating a pdf reader object
 router = APIRouter(
     prefix="/pdf",
     tags=['pdf']
 )
-'''
-reader = PdfReader('example.pdf') 
-
-
-# printing number of pages in pdf file 
-print(len(reader.pages)) 
-
-# creating a page object 
-page = reader.pages[0] 
-
-# extracting text from page 
-print(page.extract_text()) '''
 
 
 def get_db():
@@ -30,27 +21,32 @@ def get_db():
         db.close()
 
 
-@router.post("/uploadfile/")
-async def create_upload_file(file: UploadFile):
-    try:
-        file_path = f"C:\\Users\\hp\\OneDrive\\Documents\\gfg/{file.filename}"
+@router.post('/upload-file')
+async def read_pdf(uploaded_file: UploadFile = File(...), db: Session = Depends(get_db)):
+    file_content = await uploaded_file.read()
+    with open(uploaded_file.filename, "wb") as f:
+        f.write(file_content)
 
-        with open(file_path, "wb") as f:
-            f.write(file.file.read())
-
-        return {"message": "File saved successfully"}
-
-    except Exception as e:
-        return {"message": e.args}
+    file = open(uploaded_file.filename, 'rb')
+    reader = PyPDF2.PdfReader(file)
     text = ""
-    reader = await PdfReader(file.filename)
     for i in range(len(reader.pages)):
         text += str(reader.pages[i].extract_text())
+    file.close()
+
+    # text = read_pdf(uploaded_file.filename)
+
+    pdfs_model = model.Pdfs()
+    pdfs_model.name = str(uploaded_file.filename)
+    pdfs_model.content = text
+
+    db.add(pdfs_model)
+    db.commit()
+
     return {"content": text}
 
 
-@router.post('/upload-file')
-async def read_pdf(file: UploadFile):
-    file_content = await file.read(file.size)
-    file_content = str(file_content)
-    return {"content": file_content}
+@router.get("/open-files-from-database")
+async def all_files(db: Session = Depends(get_db)):
+    pdfs = db.query(model.Pdfs).all()
+    return {"pdfs": pdfs}

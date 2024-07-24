@@ -20,7 +20,7 @@ async def send_email(receiver: str, message: str, subject: str):
     em['To'] = receiver
     em['Subject'] = subject
     em.set_content(message)
-    #sendgrid.net
+
     with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
         smtp.login(sender, password)
         smtp.sendmail(sender, receiver, em.as_string())
