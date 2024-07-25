@@ -5,6 +5,7 @@ from fastapi import APIRouter
 
 load_dotenv()
 api_key = os.getenv('SERPAPI_KEY')
+
 router = APIRouter(
     prefix="/serp",
     tags=['serp']
