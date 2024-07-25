@@ -14,6 +14,7 @@ password = 'tmgf hpfb hyml zgoh'
 password_sendgrid = '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'
 context = ssl.create_default_context()
 
+
 @router.get("/send-message")
 async def send_message(number: str, message: str, subject: Optional[str] = None):
     number = number + "@vtext.com"
