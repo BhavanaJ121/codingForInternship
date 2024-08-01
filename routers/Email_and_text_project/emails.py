@@ -17,42 +17,53 @@ load_dotenv()
 sender = os.getenv('SENDER')
 password = os.getenv('PASSWORD')
 password_sendgrid = os.getenv('PASSWORD_SENDGRID')
-verizon = os.getenv('VERIZON')
-att = os.getenv('ATT')
+carriers = {
+    "verizon": "@vtext.com",
+    "att": "@txt.att.net",
+    "t-mobile": "@tmomail.net",
+    "sprint": "@messaging.sprintpcs.com",
+    "us cellular": "@email.uscc.net (sms)"
+}
 context = ssl.create_default_context()
 
 
-def send_email_or_message(receiver, message, subject):
-    em = EmailMessage()
-    em['From'] = sender
-    em['To'] = receiver
-    em['Subject'] = subject
-    em.set_content(message)
+class SendEmail:
+    def __init__ (self, receiver, message, subject):
+        self.receiver = receiver
+        self.message = message
+        self.subject = subject
 
-    with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
-        smtp.login(sender, password)
-        smtp.sendmail(sender, receiver, em.as_string())
+    def send_email_or_message(self):
+        em = EmailMessage()
+        em['From'] = sender
+        em['To'] = self.receiver
+        em['Subject'] = self.subject
+        em.set_content(self.message)
+
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
+            smtp.login(sender, password)
+            smtp.sendmail(sender, self.receiver, em.as_string())
 
 
 def find_company(name):
-    if name == 'verizon':
-        return verizon
-    elif name == 'att':
-        return att
-    else:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    for carrier in carriers.keys():
+        if name == carrier:
+            return carriers[name]
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
 
 @router.get("/")
-def send_email(receiver: str, message: str, subject: str):
-    send_email_or_message(receiver, message, subject)
+def send_email_api(receiver: str, message: str, subject: str):
+    email_object = SendEmail(receiver, message, subject)
+    email_object.send_email_or_message()
 
 
 @router.get("/send-message")
-def send_message(number: str, message: str, company: str, subject: Optional[str] = None):
+def send_message_api(number: str, message: str, company: str, subject: Optional[str] = None):
     company_at = find_company(company)
     number = str(number) + company_at
+    message_object = SendEmail(number, message, subject)
     if subject == None:
         subject = " "
 
-    send_email_or_message(number, message, subject)
+    message_object.send_email_or_message()
